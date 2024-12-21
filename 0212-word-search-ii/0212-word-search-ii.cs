@@ -1,66 +1,90 @@
 public class Solution {
-    private class TrieNode {
-        public Dictionary<char, TrieNode> Children { get; } = new Dictionary<char, TrieNode>();
-        public string Word { get; set; } = null;
-    }
+    TrieNode root = null;
+    int[] dr = null;
+    int[] dc = null;
+    IList<string> output = null;
 
-    private TrieNode root = new TrieNode();
-    private IList<string> result = new List<string>();
-    private int[][] directions = new int[][] {
-        new int[] { 0, 1 }, new int[] { 1, 0 },
-        new int[] { 0, -1 }, new int[] { -1, 0 }
-    };
-    
     public IList<string> FindWords(char[][] board, string[] words) {
-        BuildTrie(words);
+        root = new TrieNode();
+        dr = new int[4]{1, 0, -1, 0};
+        dc = new int[4]{0, -1, 0, 1};
+        output = new List<string>();
 
-        for (int i = 0; i < board.Length; i++) {
-            for (int j = 0; j < board[0].Length; j++) {
+        // build trie from words
+        foreach(string w in words){
+            Insert(w, root);
+        }
+
+        // seach for words in board
+        for(int i = 0; i < board.Length; i++){
+            for(int j = 0; j < board[0].Length; j++){
+                // start PrefixSearch
                 DFS(board, i, j, root);
             }
         }
-        
-        return result;
+
+        return output;
     }
 
-    private void BuildTrie(string[] words) {
-        foreach (var word in words) {
-            var node = root;
-            foreach (var c in word) {
-                if (!node.Children.ContainsKey(c)) {
-                    node.Children[c] = new TrieNode();
-                }
-                node = node.Children[c];
-            }
-            node.Word = word; // Mark the end of a word
+    private void DFS(char[][] board, int row, int col, TrieNode node){
+        char ch = board[row][col];
+
+        if(ch == '#' || !node.children.ContainsKey(ch)){
+            return;
         }
+
+        // mark as visited
+        board[row][col] = '#';
+        node = node.children[ch];
+
+        if(node.word != null){
+            output.Add(node.word);
+            node.word = null;
+        }
+
+        // check newighbors
+        for(int i = 0; i < 4; i++){
+            int newR = dr[i] + row;
+            int newC = dc[i] + col;
+
+            // check boundary conditons
+            if(newR >= 0 && newR < board.Length && newC >= 0 && newC < board[0].Length && board[newR][newC] != '#'){
+                DFS(board, newR, newC, node);
+            }
+        }
+
+        // restore cell
+        board[row][col] = ch;
     }
 
-    private void DFS(char[][] board, int row, int col, TrieNode node) {
-        char c = board[row][col];
-        if (c == '#' || !node.Children.ContainsKey(c)) return;
+    private void Insert(string word, TrieNode root){
+        TrieNode node = root;
 
-        node = node.Children[c];
-        if (node.Word != null) {
-            result.Add(node.Word);
-            node.Word = null; // Avoid duplicate entries
-        }
-
-        board[row][col] = '#'; // Mark the cell as visited
-        foreach (var direction in directions) {
-            int newRow = row + direction[0];
-            int newCol = col + direction[1];
-            if (newRow >= 0 && newRow < board.Length && newCol >= 0 && newCol < board[0].Length) {
-                DFS(board, newRow, newCol, node);
+        foreach(char c in word){
+            if(!node.children.ContainsKey(c)){
+                node.children[c] = new TrieNode();
             }
+
+            node = node.children[c];
         }
-        board[row][col] = c; // Restore the cell
+
+        node.word = word;
+    }
+}
+
+public class TrieNode{
+    public Dictionary<char, TrieNode> children;
+    public string? word;
+
+    public TrieNode(){
+        this.children = new Dictionary<char, TrieNode>();
+        this.word = null;
     }
 }
 
 /*
 
-Time complexity: O(m * n * 4^l)
-Space complexity: O(w * l + m * n)
+Time complexity: O(k * m + m * n * l)
+Space complexity: O(k * l)
 
 */
