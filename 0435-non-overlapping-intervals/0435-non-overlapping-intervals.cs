@@ -1,33 +1,35 @@
 public class Solution {
     public int EraseOverlapIntervals(int[][] intervals) {
-        if (intervals.Length == 0) return 0;
-
-        // Step 1: Sort the intervals by their end times
+        int count = 0;
         Array.Sort(intervals, (a, b) => a[1].CompareTo(b[1]));
+        int prevEnd = 0;
 
-        int count = 0; // Count of non-overlapping intervals
-        int end = intervals[0][1]; // End time of the last added interval
+        for(int i = 0; i < intervals.Length; i++){
+            int curStart = intervals[i][0];
+            int curEnd = intervals[i][1];
 
-        // Step 2: Iterate through the sorted intervals
-        for (int i = 1; i < intervals.Length; i++) {
-            if (intervals[i][0] >= end) {
-                // No overlap, so we can keep this interval
-                end = intervals[i][1]; // Update the end time
-                count++; // Increment count of non-overlapping intervals
-            } else {
-                // There is an overlap, so we count this interval for removal
-                // No need to update the end time since we are removing this interval
+            if(curStart >= prevEnd){
+                prevEnd = curEnd;
+            }
+            else{
+                count++;
             }
         }
 
-        // The number of intervals to remove is total intervals minus the non-overlapping ones
-        return intervals.Length - count - 1; // subtracting 1 because we started count from 0
+        return count;
     }
 }
 
 /*
 
+1. initialize count = 0, prevEnd = 0
+2. sort the input array by end time
+3. iterate over intervals
+    - check if curStart >= prevEnd, then set prevEnd = curEnd
+    - else increment count by 1
+4. return count as output
+
 Time complexity: O(nlogn)
-Space complexity: O(1)
+Space complexity: O(logn)
 
 */
