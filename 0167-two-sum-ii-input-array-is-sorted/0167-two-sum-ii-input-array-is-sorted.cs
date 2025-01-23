@@ -5,7 +5,7 @@ public class Solution {
 
         while(left < right){
             int sum = numbers[left] + numbers[right];
-            
+
             if(sum == target){
                 return new int[]{left + 1, right + 1};
             }
@@ -17,6 +17,18 @@ public class Solution {
             }
         }
 
-        return new int[0];
+        return new int[2];
     }
 }
+
+/*
+
+1. initialize left = 0 and right = n - 1
+2. perform binary search by setting sum = numbers[left] + numbers[right]
+3. if sum == target, return output as {[left + 1], [right + 1]}
+4. else move left or right towards the target based on sum value
+
+Time complexity: O(logn)
+Space complexity: O(1)
+
+*/
