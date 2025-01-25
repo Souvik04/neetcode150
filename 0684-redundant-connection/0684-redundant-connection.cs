@@ -1,53 +1,68 @@
 public class Solution {
+    Node[] nodes = null;
     public int[] FindRedundantConnection(int[][] edges) {
-        /*
-            1. create adjacency list (n + 1, as 1 based nodes)
-            2. create a visited array (n + 1, as 1 based nodes)
-            3. iterate over each edges list and perform DFS
-            4. mark destination node as visited in DFS
-            5. if any node has already been visited, return true, else false
-            6. return the edge for which DFS returns true or return empty array
-        */
+        nodes = new Node[edges.Length + 1];
 
-        IList<int>[] adjacencyList = new List<int>[edges.Length + 1];
-        
-        foreach(var e in edges){
-            if(adjacencyList[e[0]] == null){
-                adjacencyList[e[0]] = new List<int>();
+        for(int i = 0; i <= edges.Length; i++){
+            nodes[i] = new Node(i);
+        }
+
+        foreach(int[] edge in edges){
+            if(Find(edge[0]) != Find(edge[1])){
+                Union(edge[0], edge[1]);
             }
-
-            adjacencyList[e[0]].Add(e[1]);
-
-            if(adjacencyList[e[1]] == null){
-                adjacencyList[e[1]] = new List<int>();
-            }
-
-            adjacencyList[e[1]].Add(e[0]);
-
-            // reset visited array before DFS
-            bool[] visited = new bool[edges.Length + 1];
-            
-            if(DFS(adjacencyList, visited, e[1], e[0])){
-                return e;
+            else{
+                return edge;
             }
         }
 
-        return new int[0];
+        return new int[2];
     }
 
-    private bool DFS(IList<int>[] adjacencyList, bool[] visited, int destination, int source){
-        if(visited[destination]){
+    private int Find(int n){
+        if(nodes[n].parent != n){
+            nodes[n].parent = Find(nodes[n].parent);
+        }
+
+        return nodes[n].parent;
+    }
+
+    private bool Union(int x, int y){
+        int rootX = Find(x);
+        int rootY = Find(y);
+
+        if(rootX == rootY){
             return true;
         }
 
-        visited[destination] = true;
-
-        foreach(int node in adjacencyList[destination]){
-            if(source != node && DFS(adjacencyList, visited, node, destination)){
-                return true;
-            }
+        if(nodes[rootX].rank > nodes[rootY].rank){
+            nodes[rootY].parent = rootX;
+        }
+        else if(nodes[rootX].rank < nodes[rootY].rank){
+            nodes[rootX].parent = rootY;
+        }
+        else{
+            nodes[rootX].parent = rootY;
+            nodes[rootY].rank++;
         }
 
         return false;
     }
 }
+
+public class Node{
+    public int parent {get; set;}
+    public int rank {get; set;}
+
+    public Node(int parent){
+        this.parent = parent;
+        this.rank = 0;
+    }
+}
+
+/*
+
+Time complexity: O(n)
+Space complexity: O(n)
+
+*/
